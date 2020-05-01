@@ -98,11 +98,13 @@ class Student:
     @property
     def name(self):
         """Returns Student's name."""
+        print("entered name")
         return self._name
 
     @name.setter
     def name(self, new_name):
         """Initializes name or raises exceptions."""
+        print("setting name")
         if type(new_name) != str:
             raise TypeError
         elif len(new_name) > self.NAME_LEN_MAX:
@@ -113,6 +115,7 @@ class Student:
     @property
     def year(self):
         """Returns Student's year."""
+        print("entered year")
         return self._year
 
     @year.setter
