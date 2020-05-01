@@ -1,4 +1,5 @@
-""" Assignment A6-05 - Jasmine Tostado """
+""" Test: Advanced OOP - Jasmine Tostado """
+from array import Array
 
 
 class Student:
@@ -37,17 +38,20 @@ class Student:
             self.gpa = gpa
         except ValueError:
             self._gpa = self.ORIGINAL_GPA_DEFAULT
-        self._classes = []
+        self._classes = Array()
         self._id = self.next_id
         self.update_next_id()
         self._phone = self.PhoneNumber()
         self._address = self.Address()
+        self._date = self.Date()
 
     def __str__(self):
         """Returns a print statement about the info. of each student"""
         print_info = f"\nStudent ID: {self._id}, Name: {self._name}, " \
                      f"Year: {self._year} \nPhone: {str(self._phone)}, " \
-                     f"Address: {str(self._address)}"
+                     f"Address: {str(self._address)} " \
+                     f"\nClasses: {str(self._classes)}" \
+                     f"\nBirth Date: {self._date}"
         return print_info
 
     def display(self):
@@ -55,9 +59,9 @@ class Student:
         print(self)
 
     def __gt__(self, other):
-        """ Compares which student should comes earlier based on names.
+        """ Compares which student should comes earlier based on birth dates.
         Returns True whenever self is greater than other."""
-        if self.name > other.name:
+        if self.date > other.date:
             return True
         else:
             return False
@@ -97,12 +101,12 @@ class Student:
 
     @property
     def name(self):
-        """ Returns student's name. """
+        """Returns Student's name."""
         return self._name
 
     @name.setter
     def name(self, new_name):
-        """ Sets the student's name. """
+        """Initializes name or raises exceptions."""
         if type(new_name) != str:
             raise TypeError
         elif len(new_name) > self.NAME_LEN_MAX:
@@ -113,7 +117,6 @@ class Student:
     @property
     def year(self):
         """Returns Student's year."""
-        print("entered year")
         return self._year
 
     @year.setter
@@ -127,17 +130,11 @@ class Student:
     @property
     def classes(self):
         """ Returns list of classes."""
-        return self._classes
+        return str(self._classes)
 
-    @classes.setter
-    def classes(self, new_class):
-        """Adds new classes to the list."""
-        if type(new_class) != str:
-            raise TypeError
-        elif len(new_class) > self.CLASS_NAME_MAX:
-            raise ValueError
-        else:
-            self._classes.append(new_class)
+    def add_class(self, period_num, class_name):
+        """ Sets the class_name into the array.  """
+        self._classes[period_num] = class_name
 
     @classmethod
     def set_default_gpa(cls, default_gpa):
@@ -192,7 +189,68 @@ class Student:
         self._address.street_name = street_name
         self._address.apt_num = apt_num
 
+    @property
+    def date(self):
+        """ Returns self._date"""
+        return self._date
+
+    @date.setter
+    def date(self, new_date):
+        """ Calls date property inside Date class to set birth date. """
+        self._date.date = new_date
+
+    """ DATE CLASS """
+
+    class Date:
+        # class constants
+        DEFAULT_DATE = "1/1/2000"
+
+        def __init__(self, date=DEFAULT_DATE):
+            try:
+                self._date = date
+            except ValueError:
+                self._date = self.DEFAULT_DATE
+
+        def __str__(self):
+            """ Returns self._date so it can be printed as a string. """
+            return self._date
+
+        def __gt__(self, other):
+            """ Checks which student was born first.
+             Returns True whenever self is greater than other. """
+            self_list = self.date.split("/")
+            other_list = other.date.split("/")
+            if self_list[2] > other_list[2]:
+                return True
+            else:
+                if self_list[2] == other_list[2]:
+                    if self_list[1] > other_list[1]:
+                        return True
+                    elif self_list[1] == other_list[1]:
+                        if self_list[0] > other_list[0]:
+                            return True
+            return False
+
+        @property
+        def date(self):
+            """ Returns the birth date. """
+            return self._date
+
+        @date.setter
+        def date(self, new_date):
+            """ Sets the birth date of a student after sanity checking."""
+            date_list = new_date.split("/")
+            if 1 > int(date_list[0]) or int(date_list[0]) > 31:
+                raise ValueError
+            elif 1 > int(date_list[1]) or int(date_list[1]) > 12:
+                raise ValueError
+            elif 1900 > int(date_list[2]) or int(date_list[2]) > 2020:
+                raise ValueError
+            else:
+                self._date = new_date
+
     """ ADDRESS CLASS """
+
     class Address:
         # class constants
         MIN_HOUSE_NUM = 0
@@ -277,6 +335,7 @@ class Student:
                 return "<None>"
 
     """" CLASS PHONE NUMBER """
+
     class PhoneNumber:
         # class constants
         MAX_NUM_LEN = 20
@@ -295,7 +354,7 @@ class Student:
         @property
         def number(self):
             """ Returns instance variable phone_number. """
-            return self._phone
+            return str(self._phone)
 
         @number.setter
         def number(self, new_phone):
@@ -417,8 +476,8 @@ class StudentListUtilities:
                 largest_index = i
         return largest_index
 
-    @classmethod
-    def insertion_sort(cls, student_list):
+    @staticmethod
+    def insertion_sort(student_list):
         """ Sorts the list through insertion sort. """
         length = len(student_list)
         for i in range(1, length):
@@ -432,6 +491,7 @@ class StudentListUtilities:
 
     @classmethod
     def merge_sort(cls, num_list):
+        """ Sorts a list using merge sort. """
         if len(num_list) > 1:
             first_half = num_list[:len(num_list) // 2]
             second_half = num_list[len(num_list) // 2:]
@@ -451,14 +511,12 @@ class StudentListUtilities:
                     first_index += 1
                 list_index += 1
 
-            for i in range(len(first_half)):
-                if first_index < len(first_half):
-                    num_list[list_index] = first_half[first_index]
-                    list_index += 1
-                    first_index += 1
+            for i in range(first_index, len(first_half)):
+                num_list[list_index] = first_half[first_index]
+                list_index += 1
+                first_index += 1
 
-            for x in range(len(second_half)):
-                if second_index < len(second_half):
-                    num_list[list_index] = second_half[second_index]
-                    list_index += 1
-                    second_index += 1
+            for x in range(second_index, len(second_half)):
+                num_list[list_index] = second_half[second_index]
+                list_index += 1
+                second_index += 1
