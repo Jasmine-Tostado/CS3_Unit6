@@ -37,6 +37,7 @@ def main():
     StudentListUtilities.merge_sort(students)
     print(f"\n***LIST AFTER SORTING:***"
           f"{StudentListUtilities.to_string(students)}")
+    print(students[1]._name)
 
 
 main()

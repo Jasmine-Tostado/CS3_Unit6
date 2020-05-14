@@ -12,8 +12,10 @@ def stats_helper(us_stats, us_location, china_stats, china_location):
     china_death_list = []
     china_peak_rate = 0
     china_peak_date = ""
-    count = 0
+    line_count = 0
+    date_count = 0
     for i in range(len(us_stats["history"])):
+        date_count += 1
         us_history = us_stats["history"][i]
         china_history = china_stats["history"][i]
         if i > 0:
@@ -22,16 +24,18 @@ def stats_helper(us_stats, us_location, china_stats, china_location):
             china_prev_day = china_stats["history"][i - 1]
             china_daily_deaths = china_history['deaths'] - \
                                  china_prev_day['deaths']
-            count = table_format(us_history, us_location, us_daily_deaths, count)
-            count = table_format(china_history, china_location, china_daily_deaths,
-                                 count)
+            line_count = table_format(us_history, us_location, us_daily_deaths,
+                                      line_count)
+            line_count = table_format(china_history, china_location,
+                                      china_daily_deaths, line_count)
+            if i > 10:
+                us_death_list.append(us_daily_deaths)
+                china_death_list.append(china_daily_deaths)
+                date_list.append(us_history['date'].strip("T00:00:00"))
+
             if china_daily_deaths > china_peak_rate:
                 china_peak_rate = china_daily_deaths
                 china_peak_date = china_history["date"]
-
-        date_list.append(us_history['date'])
-        us_death_list.append(us_history['deaths'])
-        china_death_list.append(china_history['deaths'])
 
     peak_year, peak_month, peak_day = date_helper(china_peak_date)
     days_until_peak = date_to_days("2020-01-22T00:00:00", china_peak_date)
@@ -42,11 +46,21 @@ def stats_helper(us_stats, us_location, china_stats, china_location):
           f" values to China's first values [548]). \nPeak date for the US: "
           f"{days_to_date('2020-03-08T00:00:00', days_until_peak)}.")
 
-    plt.plot(date_list, us_death_list, date_list, china_death_list)
+    plt.plot(date_list, us_death_list)
+    plt.xticks(rotation=90)
+    plt.xlabel("Date")
+    plt.ylabel("US Daily Deaths")
+    plt.title("US's daily deaths due to Covid-19")
+    plt.show()
+    plt.plot(date_list, china_death_list)
+    plt.xlabel("Date")
+    plt.ylabel("China Daily Deaths")
+    plt.title("China's daily deaths due to Covid-19")
+    plt.xticks(rotation=90)
     plt.show()
 
 
-def table_format(data_dict, location, daily_deaths, count):
+def table_format(data_dict, location, daily_deaths, line_count):
     """ Prints the data for China and the US in a table. I don't print the
      table directly in stats_helper because I can only go trough one dict.
      at a time. """
@@ -58,7 +72,7 @@ def table_format(data_dict, location, daily_deaths, count):
               f"\nDate:         |  US TCC:  |   US DD:  |  US TR :   | "
               f"China TCC:| China DD: | China TR: |")
     for key, value in data_dict.items():
-        count += 1
+        line_count += 1
         if key == "date":
             year, month, day = date_helper(value)
             if location == "United States":
@@ -67,12 +81,12 @@ def table_format(data_dict, location, daily_deaths, count):
         elif key == "deaths" and date != "2020-01-22T00:00:00":
             print(f"+{daily_deaths:10}|", end="")
         else:
-            if count <= 7:
+            if line_count <= 7:
                 print(f"{value:10} |", end="")
             else:
                 print(f"{value:10}  |")
-                count = 0
-    return count
+                line_count = 0
+    return line_count
 
 
 def date_helper(date):
