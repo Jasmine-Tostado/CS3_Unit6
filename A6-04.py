@@ -1,7 +1,6 @@
 """ Assignment A6-04 - Jasmine Tostado """
 import requests
 import json
-import numpy as np
 import matplotlib.pyplot as plt
 
 
