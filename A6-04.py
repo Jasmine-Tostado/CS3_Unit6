@@ -1,6 +1,7 @@
 """ Assignment A6-04 - Jasmine Tostado """
 import requests
 import json
+import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -29,29 +30,45 @@ def stats_helper(us_stats, us_location, china_stats, china_location):
             line_count = table_format(china_history, china_location,
                                       china_daily_deaths, line_count)
             if i > 10:
-                us_death_list.append(us_daily_deaths)
-                china_death_list.append(china_daily_deaths)
-                date_list.append(us_history['date'].strip("T00:00:00"))
+                if us_history['date'] != "2020-04-17T00:00:00":
+                    us_death_list.append(us_daily_deaths)
+                if china_history['date'] != "2020-04-16T00:00:00":
+                    china_death_list.append(china_daily_deaths)
+                    date = us_history['date'].strip("T00:00:00")
+                    date_list.append(date)
 
-            if china_daily_deaths > china_peak_rate:
+            if china_daily_deaths > china_peak_rate and china_history['date'] !=\
+                    "2020-04-16T00:00:00":
                 china_peak_rate = china_daily_deaths
                 china_peak_date = china_history["date"]
 
     peak_year, peak_month, peak_day = date_helper(china_peak_date)
-    days_until_peak = date_to_days("2020-01-22T00:00:00", china_peak_date)
+    days_until_peak = date_to_days("2020-01-24T00:00:00", china_peak_date)
     print(f"\nChina's max rate: {china_peak_rate}, Peak date: "
           f"{f'{peak_day}/{peak_month}/{peak_year}'}, "
           f"Days it took: {days_until_peak} \nThe US is expected to peak in"
-          f" {days_until_peak} days from 08/03/2020 \n(when the US had similar"
-          f" values to China's first values [548]). \nPeak date for the US: "
-          f"{days_to_date('2020-03-08T00:00:00', days_until_peak)}.")
+          f" {days_until_peak} days from 12/03/2020 \n(when the US had similar"
+          f" values to China's first values [8]). \nPeak date for the US: "
+          f"{days_to_date('2020-03-12T00:00:00', days_until_peak)}.")
 
+    fig, ax = plt.subplots()
+    text = f"US is expected to peak on: " \
+           f"{days_to_date('2020-03-12T00:00:00', days_until_peak)}"
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    ax.text(0.05, 0.95, text, transform=ax.transAxes, fontsize=10,
+            verticalalignment='top', bbox=props)
     plt.plot(date_list, us_death_list)
     plt.xticks(rotation=90)
     plt.xlabel("Date")
     plt.ylabel("US Daily Deaths")
     plt.title("US's daily deaths due to Covid-19")
     plt.show()
+    fig, ax = plt.subplots()
+    ch_text = f"China's peak reached on: {peak_day}/{peak_month}/{peak_year}" \
+              f", rate = {china_peak_rate}"
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    ax.text(0.05, 0.95, ch_text, transform=ax.transAxes, fontsize=9,
+            verticalalignment='top', bbox=props)
     plt.plot(date_list, china_death_list)
     plt.xlabel("Date")
     plt.ylabel("China Daily Deaths")
@@ -133,7 +150,7 @@ def days_to_date(date, days_apart):
         return f"{day + days_apart}/{month}/{year}"
     else:
         days_apart -= (months[month] - day)
-        while days_apart > 0:
+        while days_apart >= 0:
             month += 1
             day = 1
             if days_apart - months[month] > 0:
@@ -171,7 +188,7 @@ def main():
     china_location = ch_location_dict["countryOrRegion"]
     china_stats = china_data["stats"]
     stats_helper(us_stats, us_location, china_stats, china_location)
-
+    #print(days_to_date("2020-3-12T00:00:00", 19))
 
 main()
 
@@ -204,112 +221,4 @@ The plot shows how China had a jump in the number of deaths on 4/16
 and slow/no increase in the number of deaths after that. The US's graph
 looks like it will continue to increase but the different circumstances
 in each country make the peak different.
-
-/Users/jasminetostado/Documents/CS3_Unit6/A6-04.py
-*** KEY: [TCC: Total Confirmed, DD: Daily Deaths Date,  TR: Total Recovered] *** 
-Date:         |  US TCC:  |   US DD:  |  US TR :   | China TCC:| China DD: | China TR: |
-23/01/2020    |         1 |+         0|         0 |       643 |+         1|        30  |
-24/01/2020    |         2 |+         0|         0 |       920 |+         8|        36  |
-25/01/2020    |         2 |+         0|         0 |      1406 |+        16|        39  |
-26/01/2020    |         5 |+         0|         0 |      2075 |+        14|        49  |
-27/01/2020    |         5 |+         0|         0 |      2877 |+        26|        58  |
-28/01/2020    |         5 |+         0|         0 |      5509 |+        49|       101  |
-29/01/2020    |         5 |+         0|         0 |      6087 |+         2|       120  |
-03/01/2020    |         5 |+         0|         0 |      8141 |+        38|       135  |
-31/01/2020    |         7 |+         0|         0 |      9802 |+        42|       214  |
-01/02/2020    |         8 |+         0|         0 |     11891 |+        46|       275  |
-02/02/2020    |         8 |+         0|         0 |     16630 |+       102|       462  |
-03/02/2020    |        11 |+         0|         0 |     19716 |+        64|       614  |
-04/02/2020    |        11 |+         0|         0 |     23707 |+        66|       843  |
-05/02/2020    |        11 |+         0|         0 |     27440 |+        72|      1112  |
-06/02/2020    |        11 |+         0|         0 |     30587 |+        70|      1477  |
-07/02/2020    |        11 |+         0|         0 |     34110 |+        85|      1999  |
-08/02/2020    |        11 |+         0|         0 |     36814 |+        87|      2594  |
-09/02/2020    |        11 |+         0|         3 |     39829 |+       100|      3219  |
-01/02/2020    |        11 |+         0|         3 |     42354 |+       107|      3916  |
-11/02/2020    |        12 |+         0|         3 |     44386 |+       100|      4636  |
-12/02/2020    |        12 |+         0|         3 |     44759 |+         5|      5083  |
-13/02/2020    |        13 |+         0|         3 |     59895 |+       252|      6217  |
-14/02/2020    |        13 |+         0|         3 |     66358 |+       152|      7973  |
-15/02/2020    |        13 |+         0|         3 |     68413 |+       142|      9298  |
-16/02/2020    |        13 |+         0|         3 |     70513 |+       103|     10755  |
-17/02/2020    |        13 |+         0|         3 |     72434 |+        98|     12462  |
-18/02/2020    |        13 |+         0|         3 |     74211 |+       139|     14206  |
-19/02/2020    |        13 |+         0|         3 |     74619 |+       113|     15962  |
-02/02/2020    |        13 |+         0|         3 |     75077 |+       122|     18013  |
-21/02/2020    |        15 |+         0|         5 |     75550 |+         0|     18704  |
-22/02/2020    |        15 |+         0|         5 |     77001 |+       205|     22699  |
-23/02/2020    |        15 |+         0|         5 |     77022 |+         2|     23187  |
-24/02/2020    |        51 |+         0|         5 |     77241 |+       150|     25015  |
-25/02/2020    |        51 |+         0|         6 |     77754 |+        70|     27676  |
-26/02/2020    |        57 |+         0|         6 |     78166 |+        52|     30084  |
-27/02/2020    |        58 |+         0|         6 |     78600 |+        29|     32930  |
-28/02/2020    |        60 |+         0|         7 |     78928 |+        44|     36329  |
-29/02/2020    |        68 |+         1|         7 |     79356 |+        47|     39320  |
-01/03/2020    |        74 |+         0|         7 |     79932 |+        35|     42162  |
-02/03/2020    |        98 |+         5|         7 |     80136 |+        42|     44854  |
-03/03/2020    |       118 |+         1|         7 |     80261 |+        33|     47450  |
-04/03/2020    |       149 |+         4|         7 |     80386 |+        36|     50001  |
-05/03/2020    |       217 |+         1|         7 |     80537 |+        32|     52292  |
-06/03/2020    |       262 |+         2|         7 |     80690 |+        29|     53944  |
-07/03/2020    |       402 |+         3|         7 |     80770 |+        28|     55539  |
-08/03/2020    |       518 |+         4|         7 |     80823 |+        28|     57388  |
-09/03/2020    |       583 |+         1|         7 |     80860 |+        23|     58804  |
-01/03/2020    |       768 |+         6|         7 |     80887 |+        16|     60181  |
-11/03/2020    |      1165 |+         4|        11 |     80921 |+        22|     61644  |
-12/03/2020    |      1758 |+         9|        12 |     80935 |+        12|     62911  |
-13/03/2020    |      2354 |+         9|        13 |     80972 |+        20|     65634  |
-14/03/2020    |      3068 |+        10|        16 |     80996 |+        10|     67004  |
-15/03/2020    |      3773 |+         9|        17 |     81020 |+        14|     67843  |
-16/03/2020    |      4760 |+        23|        17 |     81051 |+        13|     68777  |
-17/03/2020    |      6579 |+        22|        18 |     81088 |+        11|     69717  |
-18/03/2020    |      9385 |+        33|       108 |     81140 |+         8|     70529  |
-19/03/2020    |     14298 |+        61|       108 |     81200 |+         3|     71262  |
-02/03/2020    |     19853 |+        62|       147 |     81287 |+         7|     71854  |
-21/03/2020    |     26880 |+        75|       147 |     81349 |+         6|     72360  |
-22/03/2020    |     35171 |+       125|       178 |     81440 |+         9|     72815  |
-23/03/2020    |     46343 |+       113|       179 |     81515 |+         0|     72822  |
-24/03/2020    |     55095 |+       215|       181 |     81596 |+         7|     73275  |
-25/03/2020    |     69007 |+       252|       303 |     81728 |+        10|     74167  |
-26/03/2020    |     85947 |+       247|       303 |     81785 |+         0|     74175  |
-27/03/2020    |    104518 |+       415|       302 |     81947 |+         8|     75092  |
-28/03/2020    |    124285 |+       474|       302 |     82057 |+         5|     75570  |
-29/03/2020    |    156449 |+       840|       809 |     82153 |+         4|     75898  |
-03/03/2020    |    175674 |+       590|      1182 |     82241 |+         1|     76188  |
-31/03/2020    |    198298 |+       830|      1182 |     82295 |+         1|     76200  |
-01/04/2020    |    231159 |+      1209|      9163 |     82395 |+         6|     76420  |
-02/04/2020    |    260025 |+       910|      9639 |     82431 |+         0|     76427  |
-03/04/2020    |    291998 |+      1093|     10231 |     82475 |+         0|     76446  |
-04/04/2020    |    326023 |+      1332|     15461 |     82494 |+         0|     76446  |
-05/04/2020    |    351842 |+      1154|     17991 |     82523 |+         0|     76479  |
-06/04/2020    |    382157 |+      1337|     20269 |     82547 |+         0|     76489  |
-07/04/2020    |    413259 |+      1899|     22699 |     82568 |+         0|     76509  |
-08/04/2020    |    445523 |+      1900|     24247 |     82594 |+         0|     76537  |
-09/04/2020    |    479633 |+      1864|     26270 |     82607 |+         0|     76566  |
-01/04/2020    |    515558 |+      2114|     28820 |     83004 |+        27|     77844  |
-11/04/2020    |    543839 |+      1825|     31305 |     83097 |+         0|     77921  |
-12/04/2020    |    571269 |+      1496|     40755 |     83136 |+         0|     77956  |
-13/04/2020    |    596325 |+      1526|     42597 |     83303 |+         2|     78148  |
-14/04/2020    |    625192 |+      2432|     48186 |     83352 |+         1|     78265  |
-15/04/2020    |    654411 |+      2413|     50605 |     83402 |+         0|     78370  |
-16/04/2020    |    686640 |+      2256|     53452 |     83754 |+      1290|     78472  |
-17/04/2020    |    722123 |+      6387|     56444 |     83785 |+         0|     78540  |
-18/04/2020    |    750284 |+      2010|     62973 |     83804 |+         0|     78594  |
-19/04/2020    |    774985 |+      1570|     68179 |     83818 |+         0|     78647  |
-02/04/2020    |    802871 |+      1755|     70051 |     83850 |+         0|     78715  |
-21/04/2020    |    829231 |+      2562|     73056 |     83865 |+         0|     78758  |
-22/04/2020    |    857382 |+      2576|     75521 |     83877 |+         0|     78818  |
-23/04/2020    |    891855 |+      2403|     79419 |     83885 |+         0|     78869  |
-24/04/2020    |    922630 |+      2157|     95892 |     83886 |+         0|     78909  |
-25/04/2020    |    960905 |+      1923|    120798 |     83910 |+         0|     79023  |
-26/04/2020    |    987385 |+      1062|    121414 |     83913 |+         1|     79113  |
-27/04/2020    |   1008886 |+      1163|    140954 |     83919 |+         0|     79220  |
-
-China's max rate: 1290, Peak date: 16/04/2020, Days it took: 83 
-The US is expected to peak in 83 days from 08/03/2020 
-(when the US had similar values to China's first values [548]). 
-Peak date for the US: 31/5/2020.
-
-Process finished with exit code 0
-
 """
